@@ -1,6 +1,7 @@
 package cc.getportal;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +27,13 @@ public class PortalSDK {
 
     private boolean connected = false;
     private PortalWsClient wsClient;
-    private final ConcurrentHashMap<String, Consumer<Message>> commands = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Consumer<Response>> commands = new ConcurrentHashMap<>();
+    private boolean authenticated = false;
 
     public PortalSDK(@NotNull String healthEndpoint, @NotNull String wsEndpoint) {
-        this.gson = new Gson();
+        this.gson = new GsonBuilder()
+                .registerTypeAdapter(Response.class, new ResponseDeserializer())
+                .create();
         this.healthEndpoint = healthEndpoint;
         this.wsEndpoint = wsEndpoint;
     }
@@ -58,14 +62,20 @@ public class PortalSDK {
         wsClient.connect();
     }
 
-    public void authenticate(@NotNull String token, @NotNull Consumer<Message> fun) {
+    public void authenticate(@NotNull String token, @NotNull Consumer<Response> fun) {
 
         record Auth(String token) {}
-        sendCommand("Auth", new Auth(token), fun);
+        sendCommand("Auth", new Auth(token), response -> {
+
+            if (response.isSuccess()) {
+                this.authenticated = true;
+            }
+            fun.accept(response);
+        });
 
     }
 
-    private <T> void sendCommand(@NotNull String cmd, @NotNull T params, @NotNull Consumer<Message> fun) {
+    private <T> void sendCommand(@NotNull String cmd, @NotNull T params, @NotNull Consumer<Response> fun) {
 
         if (!connected) {
             throw new PortalSDKException("not connected. Use PortalSDK#connect() before.");
@@ -91,6 +101,10 @@ public class PortalSDK {
         return UUID.randomUUID().toString();
     }
 
+    public boolean isAuthenticated() {
+        return authenticated;
+    }
+
 
     // Internal methods
 
@@ -99,8 +113,8 @@ public class PortalSDK {
     }
 
     void callFun(@NotNull String msg) {
-        Message message = gson.fromJson(msg, Message.class);
-        var fun = this.commands.get(message.id());
+        Response message = gson.fromJson(msg, Response.class);
+        var fun = this.commands.get(message.id);
         fun.accept(message);
     }
 
