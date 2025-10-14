@@ -1,8 +1,12 @@
 package cc.getportal;
 
+import cc.getportal.model.PortalNotification;
+import cc.getportal.model.PortalRequest;
+import cc.getportal.model.PortalResponse;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,14 +25,15 @@ public class PortalSDK {
 
     private static final Logger logger = LoggerFactory.getLogger(PortalSDK.class);
 
+    private final ConcurrentHashMap<String, RegisteredCommand<?, ?>> commands = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, RegisteredNotification<?>> activeStreams = new ConcurrentHashMap<>();
+
     private final Gson gson;
     private final String healthEndpoint;
     private final String wsEndpoint;
 
     private boolean connected = false;
     private PortalWsClient wsClient;
-    private final ConcurrentHashMap<String, Consumer<Response>> commands = new ConcurrentHashMap<>();
-    private boolean authenticated = false;
 
     public PortalSDK(@NotNull String healthEndpoint, @NotNull String wsEndpoint) {
         this.gson = new GsonBuilder()
@@ -62,27 +67,13 @@ public class PortalSDK {
         wsClient.connect();
     }
 
-    public void authenticate(@NotNull String token, @NotNull Consumer<Response> fun) {
-
-        record Auth(String token) {}
-        sendCommand("Auth", new Auth(token), response -> {
-
-            if (response.isSuccess()) {
-                this.authenticated = true;
-            }
-            fun.accept(response);
-        });
-
-    }
-
-    private <T> void sendCommand(@NotNull String cmd, @NotNull T params, @NotNull Consumer<Response> fun) {
-
+    public <T extends PortalRequest<E, N>, E extends PortalResponse, N extends PortalNotification> void sendCommand(@NotNull T req, @NotNull Consumer<E> fun) {
         if (!connected) {
             throw new PortalSDKException("not connected. Use PortalSDK#connect() before.");
         }
 
         var id = generateId();
-        var p = this.gson.toJson(params);
+        var p = this.gson.toJson(req);
         var command = String.format("""
                 {
                 "id": "%s",
@@ -90,21 +81,20 @@ public class PortalSDK {
                 "params": %s
                 }
                 
-                """, id, cmd, p);
-        logger.info("test {}", command);
+                """, id, req.name(), p);
+        logger.info("Sending command {}: {}", req.name(), command);
 
-        this.commands.put(id, fun);
+        RegisteredNotification<N> registeredNotification = null;
+        if (req.notificationType() != null) {
+            registeredNotification = new RegisteredNotification<>(req.notificationType(), req.notificationFun());
+        }
+        this.commands.put(id, new RegisteredCommand<>(req.responseType(), fun, registeredNotification));
         wsClient.send(command);
     }
 
     private String generateId() {
         return UUID.randomUUID().toString();
     }
-
-    public boolean isAuthenticated() {
-        return authenticated;
-    }
-
 
     // Internal methods
 
@@ -114,8 +104,40 @@ public class PortalSDK {
 
     void callFun(@NotNull String msg) {
         Response message = gson.fromJson(msg, Response.class);
-        var fun = this.commands.get(message.id);
-        fun.accept(message);
+        if (message.isSuccess()) {
+            Response.Success success = message.success();
+            RegisteredCommand registeredCommand = this.commands.get(success.id);
+
+            PortalResponse portalResponse = (PortalResponse) gson.fromJson(success.jsonElement, registeredCommand.responseType);
+            registeredCommand.fun.accept(portalResponse);
+
+            // check if stream_id is present
+
+            String streamId = success.streamId;
+            if(streamId != null) {
+                logger.debug("stream id present {}", streamId);
+
+                var registeredNotification = registeredCommand.registeredNotification;
+                if(registeredNotification == null) {
+                    logger.error("Losing stream id {} because no registered notification", streamId);
+                } else {
+                    this.activeStreams.put(streamId, registeredNotification);
+                }
+            }
+        }
+
+        if(message.isNotification()) {
+            Response.Notification notification = message.notification();
+
+            RegisteredNotification registeredNotification = this.activeStreams.get(notification.id);
+
+            PortalNotification portalNotification = (PortalNotification) gson.fromJson(notification.jsonElement, registeredNotification.notificationType);
+            registeredNotification.fun.accept(portalNotification);
+
+        }
     }
 
+    public record RegisteredCommand<E extends PortalResponse, N extends PortalNotification>(Class<E> responseType, Consumer<E> fun,  @Nullable RegisteredNotification<N> registeredNotification) {}
+
+    public record RegisteredNotification<N extends PortalNotification>(Class<N> notificationType, Consumer<N> fun){}
 }

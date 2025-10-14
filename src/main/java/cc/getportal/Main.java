@@ -1,5 +1,7 @@
 package cc.getportal;
 
+import cc.getportal.model.request.AuthRequest;
+import cc.getportal.model.request.KeyHandshakeUrlRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,12 +15,16 @@ public class Main {
 
         Thread.sleep(2000);
 
-        client.authenticate("token", message -> {
+        client.sendCommand(new AuthRequest("token"), authResponse -> {
+            logger.info("Auth response '{}'", authResponse.getMessage());
+        });
 
-            logger.info("Authenticated response: {}", message);
+        Thread.sleep(2000);
 
-
-            logger.info("Is authenticated?: {}", client.isAuthenticated());
+        client.sendCommand(new KeyHandshakeUrlRequest(notification -> {
+            logger.info("KeyHandshakeUrl notification mainkey {}, relays {}", notification.getMainKey(), notification.getPreferredRelays());
+        }), keyHandshakeUrlResponse -> {
+            logger.info("KeyHandshakeUrl '{}'", keyHandshakeUrlResponse.getUrl());
         });
     }
 }

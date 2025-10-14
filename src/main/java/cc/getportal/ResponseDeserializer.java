@@ -22,15 +22,18 @@ class ResponseDeserializer implements JsonDeserializer<Response> {
 
             case "error" -> new Response.Error(id, obj.get("message").getAsString());
             case "success" -> {
-                LinkedHashMap<String, Object> data  = context.deserialize(obj.get("data"), LinkedHashMap.class);
+                JsonElement jsonElement = obj.get("data");
+                LinkedHashMap<String, Object> data  = context.deserialize(jsonElement, LinkedHashMap.class);
                 String successType = (String) data.get("type");
-                yield new Response.Success(id, successType, data);
+                String streamId = (String) data.get("stream_id");
+                yield new Response.Success(id, successType, data, jsonElement, streamId);
             }
 
             case "notification" -> {
-                LinkedHashMap<String, Object> data  = context.deserialize(obj.get("data"), LinkedHashMap.class);
+                JsonElement jsonElement = obj.get("data");
+                LinkedHashMap<String, Object> data  = context.deserialize(jsonElement, LinkedHashMap.class);
                 String notificationType = (String) data.get("type");
-                yield new Response.Notification(id, notificationType, data);
+                yield new Response.Notification(id, notificationType, data, jsonElement);
             }
 
             default -> throw new IllegalStateException("Unexpected value: " + type);

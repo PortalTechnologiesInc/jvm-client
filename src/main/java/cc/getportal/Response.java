@@ -1,5 +1,9 @@
 package cc.getportal;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.LinkedHashMap;
 
 public sealed class Response {
@@ -54,22 +58,29 @@ public sealed class Response {
     public static final class Success extends Response {
         final String successType;
         final LinkedHashMap<String, Object> data;
+        final JsonElement jsonElement;
 
-        public Success(String id, String successType, LinkedHashMap<String, Object> data) {
+        // Optional stream_id field
+        final String streamId;
+        public Success(String id, String successType, LinkedHashMap<String, Object> data, JsonElement jsonElement, @Nullable String streamId) {
             super(id, ResponseType.SUCCESS);
             this.successType = successType;
             this.data = data;
+            this.jsonElement = jsonElement;
+            this.streamId = streamId;
         }
     }
 
     public static final class Notification extends Response {
         final String notificationType;
         final LinkedHashMap<String, Object> data;
+        final JsonElement jsonElement;
 
-        public Notification(String id, String notificationType, LinkedHashMap<String, Object> data) {
+        public Notification(String id, String notificationType, LinkedHashMap<String, Object> data, JsonElement jsonElement) {
             super(id, ResponseType.NOTIFICATION);
             this.notificationType = notificationType;
             this.data = data;
+            this.jsonElement = jsonElement;
         }
     }
 }
