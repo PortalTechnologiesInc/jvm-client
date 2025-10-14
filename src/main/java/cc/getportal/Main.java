@@ -15,7 +15,7 @@ public class Main {
 
         client.authenticate("token", message -> {
 
-            logger.info("Authenticated response: {}", message.extra);
+            logger.info("Authenticated response: {}", message);
 
 
             logger.info("Is authenticated?: {}", client.isAuthenticated());

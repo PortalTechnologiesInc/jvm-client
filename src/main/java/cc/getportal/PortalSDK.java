@@ -38,7 +38,7 @@ public class PortalSDK {
         this.wsEndpoint = wsEndpoint;
     }
 
-    public void connect() throws IOException {
+    public void connect() {
 
         {
             HttpClient client = HttpClient.newHttpClient();

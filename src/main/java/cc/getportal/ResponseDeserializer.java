@@ -3,6 +3,7 @@ package cc.getportal;
 import com.google.gson.*;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 class ResponseDeserializer implements JsonDeserializer<Response> {
@@ -17,16 +18,22 @@ class ResponseDeserializer implements JsonDeserializer<Response> {
         String id = obj.has("id") ? obj.get("id").getAsString() : null;
         String type = obj.has("type") ? obj.get("type").getAsString() : null;
 
-        Response r = new Response(id, type);
+        return switch (type) {
 
-        // extra fields
-        for (Map.Entry<String, JsonElement> e : obj.entrySet()) {
-            String key = e.getKey();
-            if (!key.equals("id") && !key.equals("type")) {
-                r.extra.put(key, context.deserialize(e.getValue(), Object.class));
+            case "error" -> new Response.Error(id, obj.get("message").getAsString());
+            case "success" -> {
+                LinkedHashMap<String, Object> data  = context.deserialize(obj.get("data"), LinkedHashMap.class);
+                String successType = (String) data.get("type");
+                yield new Response.Success(id, successType, data);
             }
-        }
 
-        return r;
+            case "notification" -> {
+                LinkedHashMap<String, Object> data  = context.deserialize(obj.get("data"), LinkedHashMap.class);
+                String notificationType = (String) data.get("type");
+                yield new Response.Notification(id, notificationType, data);
+            }
+
+            default -> throw new IllegalStateException("Unexpected value: " + type);
+        };
     }
 }
