@@ -23,6 +23,6 @@ public class AuthenticateKeyRequest extends PortalRequest<AuthenticateKeyRespons
 
     @Override
     public Class<AuthenticateKeyResponse> responseType() {
-        return null;
+        return AuthenticateKeyResponse.class;
     }
 }
