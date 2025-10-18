@@ -73,7 +73,7 @@ public class PortalSDK {
         }
 
         var id = generateId();
-        var p = this.gson.toJson(req);
+        var p = req.isUnit() ? null : this.gson.toJson(req);
         var command = String.format("""
                 {
                 "id": "%s",
@@ -88,7 +88,7 @@ public class PortalSDK {
         if (req.notificationType() != null) {
             registeredNotification = new RegisteredNotification<>(req.notificationType(), req.notificationFun());
         }
-        this.commands.put(id, new RegisteredCommand<>(req.responseType(), fun, registeredNotification));
+        this.commands.put(id, new RegisteredCommand<>(req.name(), req.responseType(), fun, registeredNotification));
         wsClient.send(command);
     }
 
@@ -135,9 +135,21 @@ public class PortalSDK {
             registeredNotification.fun.accept(portalNotification);
 
         }
+
+        if(message.isError()) {
+            Response.Error error = message.error();
+
+            RegisteredCommand registeredCommand = this.commands.get(error.id);
+
+            if(registeredCommand == null) {
+                logger.error("Unexpected error: {}", error);
+            } else {
+                logger.error("Error of command `{}`: {}", registeredCommand.cmd, error.message);
+            }
+        }
     }
 
-    public record RegisteredCommand<E extends PortalResponse, N extends PortalNotification>(Class<E> responseType, Consumer<E> fun,  @Nullable RegisteredNotification<N> registeredNotification) {}
+    public record RegisteredCommand<E extends PortalResponse, N extends PortalNotification>(String cmd, Class<E> responseType, Consumer<E> fun,  @Nullable RegisteredNotification<N> registeredNotification) {}
 
     public record RegisteredNotification<N extends PortalNotification>(Class<N> notificationType, Consumer<N> fun){}
 }

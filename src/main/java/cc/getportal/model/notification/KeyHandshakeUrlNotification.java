@@ -4,14 +4,8 @@ import cc.getportal.model.PortalNotification;
 
 import java.util.List;
 
-public class KeyHandshakeUrlNotification implements PortalNotification {
-    final String main_key;
-    final List<String> preferred_relays;
-
-    public KeyHandshakeUrlNotification(String mainKey, List<String> preferredRelays) {
-        main_key = mainKey;
-        preferred_relays = preferredRelays;
-    }
+public record KeyHandshakeUrlNotification(String main_key,
+                                          List<String> preferred_relays) implements PortalNotification {
 
     public String getMainKey() {
         return main_key;

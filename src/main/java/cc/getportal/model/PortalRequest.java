@@ -4,7 +4,6 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 
 public abstract class PortalRequest<T extends PortalResponse, N> {
@@ -35,5 +34,10 @@ public abstract class PortalRequest<T extends PortalResponse, N> {
 
     @ApiStatus.Internal
     public abstract Class<T> responseType();
+
+    @ApiStatus.Internal
+    public boolean isUnit() {
+        return false;
+    }
 
 }
