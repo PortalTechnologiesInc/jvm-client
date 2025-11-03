@@ -3,6 +3,7 @@ package cc.getportal;
 import cc.getportal.model.Currency;
 import cc.getportal.model.InvoiceRequestContent;
 import cc.getportal.model.Profile;
+import cc.getportal.model.SinglePaymentRequestContent;
 import cc.getportal.model.request.*;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
@@ -34,7 +35,11 @@ public class Main {
             logger.info("Auth response '{}'", authResponse.message());
         });
 
-        client.sendCommand(new KeyHandshakeUrlRequest(notification -> {           connected(client, notification.getMainKey(), notification.getPreferredRelays());
+        client.sendCommand(new KeyHandshakeUrlRequest(notification -> {
+            client.sendCommand(new AuthenticateKeyRequest(notification.getMainKey(), Collections.emptyList()), authenticateKeyResponse -> {
+                logger.info("AuthenticateKey response: {}", authenticateKeyResponse);
+                connected(client, notification.getMainKey(), notification.getPreferredRelays());
+            });
         }), keyHandshakeUrlResponse -> {
             logger.info("KeyHandshakeUrl '{}'", keyHandshakeUrlResponse.url());
             try {
@@ -47,24 +52,24 @@ public class Main {
 
     private static void connected(PortalSDK client, String mainKey, List<String> preferredRelays) {
         logger.info("KeyHandshake with {}", mainKey);
-        String minturl = "https://mint.getportal.cc";
 
-        String staticAuthToken = "test-static-token-for-mint-getportal-cc";
-        String unit = "multi";
-
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        client.sendCommand(new RequestCashuRequest(minturl, unit, 1, mainKey, Collections.emptyList()), requestCashuResponse -> {
-            logger.info("RequestCashu response: {}", requestCashuResponse);
+        client.sendCommand(new RequestSinglePaymentRequest(mainKey, Collections.emptyList(), new SinglePaymentRequestContent(
+                "My first payment in java",
+                10_000,
+                Currency.MILLISATS,
+                null,
+                null
+        ), notification -> {
+            logger.info("Single payment notification: {}", notification.status());
+        }), requestSinglePaymentResponse -> {
+            logger.info("RequestSinglePayment response: {}", requestSinglePaymentResponse);
         });
+
 
     }
 
     private static void createQrCode(String data) throws WriterException, IOException {
-        int size= 24;
+        int size= 48;
         QRCodeWriter writer = new QRCodeWriter();
         BitMatrix matrix = writer.encode(data, BarcodeFormat.QR_CODE, size, size);
         MatrixToImageWriter.writeToPath(matrix, "PNG", Path.of("./qrcode.png"));

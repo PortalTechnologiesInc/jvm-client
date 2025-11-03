@@ -134,6 +134,12 @@ public class PortalSDK {
             PortalNotification portalNotification = (PortalNotification) gson.fromJson(notification.jsonElement, registeredNotification.notificationType);
             registeredNotification.fun.accept(portalNotification);
 
+
+            // remove from active streams map
+            if(portalNotification.deleteStream()) {
+                this.activeStreams.remove(notification.id);
+            }
+
         }
 
         if(message.isError()) {
