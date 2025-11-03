@@ -77,8 +77,13 @@ public class Main {
         });
 
         Thread.sleep(1000L * 2);
-        client.sendCommand(new AddRelayRequest("ws://not-working.com"), addRelayResponse -> {
+        String relayToAdd = "ws://not-working.com";
+        client.sendCommand(new AddRelayRequest(relayToAdd), addRelayResponse -> {
             logger.info("AddRelay response: {}", addRelayResponse);
+        });
+
+        client.sendCommand(new RemoveRelayRequest(relayToAdd), removeRelayResponse -> {
+            logger.info("RemoveRelay response: {}", removeRelayResponse);
         });
     }
 }
