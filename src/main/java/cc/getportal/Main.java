@@ -89,9 +89,17 @@ public class Main {
         String minturl = "https://mint.getportal.cc";
 
         String staticAuthToken = "test-static-token-for-mint-getportal-cc";
-        client.sendCommand(new MintCashuRequest(minturl, staticAuthToken, "multi", 1, "A premium ticket"), mintCashuResponse -> {
+        String unit = "multi";
+
+        client.sendCommand(new MintCashuRequest(minturl, staticAuthToken, unit, 1, "A premium ticket"), mintCashuResponse -> {
             logger.info("MintCashu response: {}", mintCashuResponse);
+
+            client.sendCommand(new BurnCashuRequest(minturl, staticAuthToken, unit, mintCashuResponse.token()), burnCashuResponse -> {
+                logger.info("BurnCashu response: {}", burnCashuResponse);
+            });
+
         });
+
 
     }
 }
