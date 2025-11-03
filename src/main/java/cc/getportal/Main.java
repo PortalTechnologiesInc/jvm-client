@@ -100,6 +100,9 @@ public class Main {
 
         });
 
+        client.sendCommand(new SendCashuDirectRequest(key, Collections.emptyList(), "cashu-token"), sendCashuDirectResponse -> {
+            logger.info("SendCashuDirect response: {}", sendCashuDirectResponse);
+        });
 
     }
 }
