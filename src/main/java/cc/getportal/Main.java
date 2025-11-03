@@ -85,5 +85,13 @@ public class Main {
         client.sendCommand(new RemoveRelayRequest(relayToAdd), removeRelayResponse -> {
             logger.info("RemoveRelay response: {}", removeRelayResponse);
         });
+
+        String minturl = "https://mint.getportal.cc";
+
+        String staticAuthToken = "test-static-token-for-mint-getportal-cc";
+        client.sendCommand(new MintCashuRequest(minturl, staticAuthToken, "multi", 1, "A premium ticket"), mintCashuResponse -> {
+            logger.info("MintCashu response: {}", mintCashuResponse);
+        });
+
     }
 }
