@@ -4,11 +4,20 @@ import cc.getportal.model.Currency;
 import cc.getportal.model.InvoiceRequestContent;
 import cc.getportal.model.Profile;
 import cc.getportal.model.request.*;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Main {
@@ -25,84 +34,39 @@ public class Main {
             logger.info("Auth response '{}'", authResponse.message());
         });
 
-        Thread.sleep(2000);
-
-        client.sendCommand(new KeyHandshakeUrlRequest(notification -> {
-            logger.info("NOT: KeyHandshakeUrl mainkey {}, relays {}", notification.getMainKey(), notification.getPreferredRelays());
+        client.sendCommand(new KeyHandshakeUrlRequest(notification -> {           connected(client, notification.getMainKey(), notification.getPreferredRelays());
         }), keyHandshakeUrlResponse -> {
             logger.info("KeyHandshakeUrl '{}'", keyHandshakeUrlResponse.url());
+            try {
+                createQrCode(keyHandshakeUrlResponse.url());
+            } catch (WriterException | IOException e) {
+                throw new RuntimeException(e);
+            }
         });
+    }
 
-        var key = "fb45f982d24c6ddaaed012e28c2514ba7207a08cd738d52e27a5ef6827667900";
-        client.sendCommand(new FetchProfileRequest(key), fetchProfileResponse -> {
-            logger.info("Fetched profile: {}", fetchProfileResponse);
-        });
-
-        client.sendCommand(new SetProfileRequest(new Profile("myname", "mydisp", null, null)), unitResponse -> {
-            logger.info("Set profile");
-        });
-
-        client.sendCommand(new CloseRecurringPaymentRequest(key, Collections.emptyList(), "subscriptionId"), closeRecurringPaymentResponse -> {
-            logger.info("Closed recurring payment {}", closeRecurringPaymentResponse);
-        });
-
-        client.sendCommand(new ListenClosedRecurringPaymentRequest(notification -> {
-            logger.info("NOT: {}", notification);
-        }), listenClosedRecurringPaymentResponse -> {
-            logger.info("Listening closed recurring payments");
-        });
-
-        client.sendCommand(new RequestInvoiceRequest(key, Collections.emptyList(), new InvoiceRequestContent(
-                "request-id",
-                10_000,
-                Currency.MILLISATS,
-                null,
-                String.valueOf(Instant.now().plusSeconds(60 * 5).toEpochMilli()),
-                "my-description",
-                null
-        )), requestInvoiceResponse -> {
-            logger.info("Request invoice response {}", requestInvoiceResponse);
-        });
-
-        AtomicReference<String> issuedJwt = new AtomicReference<>();
-        client.sendCommand(new IssueJwtRequest(key, 2), issueJwtResponse -> {
-            logger.info("Issued jwt: {}", issueJwtResponse.token());
-            issuedJwt.set(issueJwtResponse.token());
-        });
-
-        Thread.sleep(1000L * 2);
-
-        client.sendCommand(new VerifyJwtRequest(key, issuedJwt.get()), verifyJwtResponse -> {
-            logger.info("VerifyJwt response: {}", verifyJwtResponse);
-        });
-
-        Thread.sleep(1000L * 2);
-        String relayToAdd = "ws://not-working.com";
-        client.sendCommand(new AddRelayRequest(relayToAdd), addRelayResponse -> {
-            logger.info("AddRelay response: {}", addRelayResponse);
-        });
-
-        client.sendCommand(new RemoveRelayRequest(relayToAdd), removeRelayResponse -> {
-            logger.info("RemoveRelay response: {}", removeRelayResponse);
-        });
-
+    private static void connected(PortalSDK client, String mainKey, List<String> preferredRelays) {
+        logger.info("KeyHandshake with {}", mainKey);
         String minturl = "https://mint.getportal.cc";
 
         String staticAuthToken = "test-static-token-for-mint-getportal-cc";
         String unit = "multi";
 
-        client.sendCommand(new MintCashuRequest(minturl, staticAuthToken, unit, 1, "A premium ticket"), mintCashuResponse -> {
-            logger.info("MintCashu response: {}", mintCashuResponse);
-
-            client.sendCommand(new BurnCashuRequest(minturl, staticAuthToken, unit, mintCashuResponse.token()), burnCashuResponse -> {
-                logger.info("BurnCashu response: {}", burnCashuResponse);
-            });
-
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        client.sendCommand(new RequestCashuRequest(minturl, unit, 1, mainKey, Collections.emptyList()), requestCashuResponse -> {
+            logger.info("RequestCashu response: {}", requestCashuResponse);
         });
 
-        client.sendCommand(new SendCashuDirectRequest(key, Collections.emptyList(), "cashu-token"), sendCashuDirectResponse -> {
-            logger.info("SendCashuDirect response: {}", sendCashuDirectResponse);
-        });
+    }
 
+    private static void createQrCode(String data) throws WriterException, IOException {
+        int size= 24;
+        QRCodeWriter writer = new QRCodeWriter();
+        BitMatrix matrix = writer.encode(data, BarcodeFormat.QR_CODE, size, size);
+        MatrixToImageWriter.writeToPath(matrix, "PNG", Path.of("./qrcode.png"));
     }
 }
