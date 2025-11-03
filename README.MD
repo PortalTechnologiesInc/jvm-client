@@ -1,3 +1,19 @@
 # Portal SDK - JVM Client
 
 A Java client for the Portal WebSocket Server, providing Nostr-based authentication and Lightning Network payment processing capabilities.
+
+
+## Available Commands
+
+Commands are implemented as specific request classes in [`src/main/java/cc/getportal/model/request/`](./src/main/java/cc/getportal/model/request/), and used via the `sendCommand()` method of the [`PortalSDK`](./src/main/java/cc/getportal/PortalSDK.java) class.
+
+Some key available commands include:
+
+- [`AuthRequest`](./src/main/java/cc/getportal/model/request/AuthRequest.java): Authenticate using a token.
+- [`KeyHandshakeUrlRequest`](./src/main/java/cc/getportal/model/request/KeyHandshakeUrlRequest.java): Get handshake URL for key and relays.
+- [`IssueJwtRequest`](./src/main/java/cc/getportal/model/request/IssueJwtRequest.java): Issue a JWT for authentication.
+- [`MintCashuRequest`](./src/main/java/cc/getportal/model/request/MintCashuRequest.java): Mint Cashu tokens.
+
+> See [`src/main/java/cc/getportal/model/request/`](./src/main/java/cc/getportal/model/request/) for all available commands and additional details.
+
+To use a command, instantiate its request class and pass it to `PortalSDK.sendCommand(...)`. The full list of commands may evolve; check the request folder for the latest options.
