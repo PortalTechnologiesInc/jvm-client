@@ -75,5 +75,10 @@ public class Main {
         client.sendCommand(new VerifyJwtRequest(key, issuedJwt.get()), verifyJwtResponse -> {
             logger.info("VerifyJwt response: {}", verifyJwtResponse);
         });
+
+        Thread.sleep(1000L * 2);
+        client.sendCommand(new AddRelayRequest("ws://not-working.com"), addRelayResponse -> {
+            logger.info("AddRelay response: {}", addRelayResponse);
+        });
     }
 }
