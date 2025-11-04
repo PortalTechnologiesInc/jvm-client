@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    `maven-publish`
 }
 
 group = "cc.getportal"
@@ -7,6 +8,18 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+
+            groupId = "cc.getportal"
+            artifactId = "portal-jvm-client"
+            version = "1.0-SNAPSHOT"
+        }
+    }
 }
 
 dependencies {
