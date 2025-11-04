@@ -2,6 +2,7 @@ package cc.getportal;
 
 import cc.getportal.model.*;
 import cc.getportal.model.request.*;
+import cc.getportal.model.response.AuthenticateKeyResponse;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -26,16 +27,31 @@ public class Main {
 
         Thread.sleep(2000);
 
-        client.sendCommand(new AuthRequest("token"), authResponse -> {
+        client.sendCommand(new AuthRequest("token"), (authResponse, err) -> {
+            if(err != null) {
+                logger.error("error auth: {}", err);
+                return;
+            }
             logger.info("Auth response '{}'", authResponse.message());
         });
 
         client.sendCommand(new KeyHandshakeUrlRequest(notification -> {
-            client.sendCommand(new AuthenticateKeyRequest(notification.getMainKey(), Collections.emptyList()), authenticateKeyResponse -> {
+            client.sendCommand(new AuthenticateKeyRequest(notification.getMainKey(), Collections.emptyList()), (authenticateKeyResponse, err) -> {
+                if(err != null) {
+                    logger.error(err);
+                    return;
+                }
                 logger.info("AuthenticateKey response: {}", authenticateKeyResponse);
-                connected(client, notification.getMainKey(), notification.getPreferredRelays());
+
+                if (authenticateKeyResponse.event().status().status() == AuthenticateKeyResponse.AuthResponseStatusType.APPROVED) {
+                    connected(client, notification.getMainKey(), notification.getPreferredRelays());
+                }
             });
-        }), keyHandshakeUrlResponse -> {
+        }), (keyHandshakeUrlResponse, err) -> {
+            if(err != null) {
+                logger.error("error keyhandshake: {}", err);
+                return;
+            }
             logger.info("KeyHandshakeUrl '{}'", keyHandshakeUrlResponse.url());
             try {
                 createQrCode(keyHandshakeUrlResponse.url());
@@ -69,7 +85,11 @@ public class Main {
                 null,
                 "my first recurring payment",
                 "request-id-1"
-        )), requestRecurringPaymentResponse -> {
+        )), (requestRecurringPaymentResponse, err) -> {
+            if(err != null) {
+                logger.error(err);
+                return;
+            }
             logger.info("RequestRecurringPayment response: {}", requestRecurringPaymentResponse);
         });
 

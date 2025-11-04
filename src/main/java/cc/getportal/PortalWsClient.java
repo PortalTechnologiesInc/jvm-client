@@ -27,7 +27,7 @@ class PortalWsClient extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        logger.info("new connection opened");
+        logger.debug("new connection opened");
 
         client.setConnected(true);
 
@@ -43,13 +43,13 @@ class PortalWsClient extends WebSocketClient {
 
     @Override
     public void onMessage(String message) {
-        logger.info("received message: {}", message);
+        logger.debug("received message: {}", message);
         client.callFun(message);
     }
 
     @Override
     public void onMessage(ByteBuffer message) {
-        logger.info("received ByteBuffer");
+        logger.debug("received ByteBuffer");
     }
 
     @Override

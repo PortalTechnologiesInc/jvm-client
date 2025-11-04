@@ -11,7 +11,7 @@ Some key available commands include:
 
 - [`AuthRequest`](./src/main/java/cc/getportal/model/request/AuthRequest.java): Authenticate using a token.
 - [`KeyHandshakeUrlRequest`](./src/main/java/cc/getportal/model/request/KeyHandshakeUrlRequest.java): Get handshake URL for key and relays.
-- [`IssueJwtRequest`](./src/main/java/cc/getportal/model/request/IssueJwtRequest.java): Issue a JWT for authentication.
+- [`RequestSinglePaymentRequest`](./src/main/java/cc/getportal/model/request/RequestSinglePaymentRequest.java): Request a single payment.
 - [`MintCashuRequest`](./src/main/java/cc/getportal/model/request/MintCashuRequest.java): Mint Cashu tokens.
 
 > See [`src/main/java/cc/getportal/model/request/`](./src/main/java/cc/getportal/model/request/) for all available commands and additional details.

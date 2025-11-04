@@ -19,6 +19,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class PortalSDK {
@@ -67,7 +68,7 @@ public class PortalSDK {
         wsClient.connect();
     }
 
-    public <T extends PortalRequest<E, N>, E extends PortalResponse, N extends PortalNotification> void sendCommand(@NotNull T req, @NotNull Consumer<E> fun) {
+    public <T extends PortalRequest<E, N>, E extends PortalResponse, N extends PortalNotification> void sendCommand(@NotNull T req, @NotNull BiConsumer<E, String> fun) {
         if (!connected) {
             throw new PortalSDKException("not connected. Use PortalSDK#connect() before.");
         }
@@ -82,7 +83,7 @@ public class PortalSDK {
                 }
                 
                 """, id, req.name(), p);
-        logger.info("Sending command {}: {}", req.name(), command);
+        logger.debug("Sending command {}: {}", req.name(), command);
 
         RegisteredNotification<N> registeredNotification = null;
         if (req.notificationType() != null) {
@@ -109,7 +110,7 @@ public class PortalSDK {
             RegisteredCommand registeredCommand = this.commands.get(success.id);
 
             PortalResponse portalResponse = (PortalResponse) gson.fromJson(success.jsonElement, registeredCommand.responseType);
-            registeredCommand.fun.accept(portalResponse);
+            registeredCommand.fun.accept(portalResponse, null);
 
             // check if stream_id is present
 
@@ -146,16 +147,16 @@ public class PortalSDK {
             Response.Error error = message.error();
 
             RegisteredCommand registeredCommand = this.commands.get(error.id);
-
-            if(registeredCommand == null) {
-                logger.error("Unexpected error: {}", error);
-            } else {
-                logger.error("Error of command `{}`: {}", registeredCommand.cmd, error.message);
-            }
+            registeredCommand.fun.accept(null, error.message);
+//            if(registeredCommand == null) {
+//                logger.error("Unexpected error: {}", error);
+//            } else {
+//                logger.error("Error of command `{}`: {}", registeredCommand.cmd, error.message);
+//            }
         }
     }
 
-    public record RegisteredCommand<E extends PortalResponse, N extends PortalNotification>(String cmd, Class<E> responseType, Consumer<E> fun,  @Nullable RegisteredNotification<N> registeredNotification) {}
+    public record RegisteredCommand<E extends PortalResponse, N extends PortalNotification>(String cmd, Class<E> responseType, BiConsumer<E, String> fun,  @Nullable RegisteredNotification<N> registeredNotification) {}
 
     public record RegisteredNotification<N extends PortalNotification>(Class<N> notificationType, Consumer<N> fun){}
 }
