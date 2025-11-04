@@ -1,9 +1,6 @@
 package cc.getportal;
 
-import cc.getportal.model.Currency;
-import cc.getportal.model.InvoiceRequestContent;
-import cc.getportal.model.Profile;
-import cc.getportal.model.SinglePaymentRequestContent;
+import cc.getportal.model.*;
 import cc.getportal.model.request.*;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
@@ -14,12 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
@@ -53,18 +48,30 @@ public class Main {
     private static void connected(PortalSDK client, String mainKey, List<String> preferredRelays) {
         logger.info("KeyHandshake with {}", mainKey);
 
-        client.sendCommand(new RequestSinglePaymentRequest(mainKey, Collections.emptyList(), new SinglePaymentRequestContent(
-                "My first payment in java",
+//        client.sendCommand(new RequestSinglePaymentRequest(mainKey, Collections.emptyList(), new SinglePaymentRequestContent(
+//                "My first payment in java",
+//                10_000,
+//                Currency.MILLISATS,
+//                null,
+//                null
+//        ), notification -> {
+//            logger.info("Single payment notification: {}", notification.status());
+//        }), requestSinglePaymentResponse -> {
+//            logger.info("RequestSinglePayment response: {}", requestSinglePaymentResponse);
+//        });
+
+        client.sendCommand(new RequestRecurringPaymentRequest(mainKey, Collections.emptyList(), new RecurringPaymentRequestContent(
                 10_000,
                 Currency.MILLISATS,
+                new RecurrenceInfo(null, "minutely", null, Instant.now().plusSeconds(60 * 1).getEpochSecond() + ""),
                 null,
-                null
-        ), notification -> {
-            logger.info("Single payment notification: {}", notification.status());
-        }), requestSinglePaymentResponse -> {
-            logger.info("RequestSinglePayment response: {}", requestSinglePaymentResponse);
+                Instant.now().plusSeconds(60 * 5).getEpochSecond() + "",
+                null,
+                "my first recurring payment",
+                "request-id-1"
+        )), requestRecurringPaymentResponse -> {
+            logger.info("RequestRecurringPayment response: {}", requestRecurringPaymentResponse);
         });
-
 
     }
 

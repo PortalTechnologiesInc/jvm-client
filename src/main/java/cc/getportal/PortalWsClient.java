@@ -43,7 +43,7 @@ class PortalWsClient extends WebSocketClient {
 
     @Override
     public void onMessage(String message) {
-        logger.debug("received message: {}", message);
+        logger.info("received message: {}", message);
         client.callFun(message);
     }
 
