@@ -3,6 +3,7 @@ package cc.getportal;
 import java.net.URI;
 import java.nio.ByteBuffer;
 
+import cc.getportal.command.request.AuthRequest;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.handshake.ServerHandshake;
@@ -29,7 +30,14 @@ class PortalWsClient extends WebSocketClient {
     public void onOpen(ServerHandshake handshakedata) {
         logger.debug("new connection opened");
 
-        client.setConnected(true);
+        client.internalSendCommand(new AuthRequest(client.authToken), (res, err) -> {
+            if(err != null) {
+                logger.error("error auth request: {}", err);
+                return;
+            }
+            client.setConnected(true);
+            logger.info("Connected: {}", res.message());
+        });
 
     }
 

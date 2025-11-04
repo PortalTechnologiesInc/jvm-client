@@ -30,6 +30,7 @@ public class PortalSDK {
     private final String healthEndpoint;
     private final String wsEndpoint;
 
+    String authToken = "";
     private boolean connected = false;
     private PortalWsClient wsClient;
 
@@ -41,8 +42,8 @@ public class PortalSDK {
         this.wsEndpoint = wsEndpoint;
     }
 
-    public void connect() {
-
+    public void connect(@NotNull String authToken) {
+        this.authToken = authToken;
         {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
@@ -58,7 +59,7 @@ public class PortalSDK {
                 throw new PortalSDKException("health check not successful");
             }
 
-            logger.info("health check successful");
+            logger.debug("health check successful");
         }
 
         wsClient = new PortalWsClient(URI.create(this.wsEndpoint), this);
@@ -69,7 +70,10 @@ public class PortalSDK {
         if (!connected) {
             throw new PortalSDKException("not connected. Use PortalSDK#connect() before.");
         }
+        internalSendCommand(req,fun);
+    }
 
+    <T extends PortalRequest<E, N>, E extends PortalResponse, N extends PortalNotification> void internalSendCommand(@NotNull T req, @NotNull BiConsumer<E, String> fun) {
         var id = generateId();
         var p = req.isUnit() ? null : this.gson.toJson(req);
         var command = String.format("""
@@ -153,7 +157,7 @@ public class PortalSDK {
         }
     }
 
-    public record RegisteredCommand<E extends PortalResponse, N extends PortalNotification>(String cmd, Class<E> responseType, BiConsumer<E, String> fun,  @Nullable RegisteredNotification<N> registeredNotification) {}
+    record RegisteredCommand<E extends PortalResponse, N extends PortalNotification>(String cmd, Class<E> responseType, BiConsumer<E, String> fun,  @Nullable RegisteredNotification<N> registeredNotification) {}
 
-    public record RegisteredNotification<N extends PortalNotification>(Class<N> notificationType, Consumer<N> fun){}
+    record RegisteredNotification<N extends PortalNotification>(Class<N> notificationType, Consumer<N> fun){}
 }

@@ -3,7 +3,9 @@ package cc.getportal.command.request;
 import cc.getportal.command.PortalRequest;
 import cc.getportal.command.notification.UnitNotification;
 import cc.getportal.command.response.AuthResponse;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.Internal
 public class AuthRequest extends PortalRequest<AuthResponse, UnitNotification> {
     final String token;
 

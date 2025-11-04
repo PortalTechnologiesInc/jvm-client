@@ -18,6 +18,8 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
@@ -25,17 +27,9 @@ public class Main {
     public static void main(String[] args) throws Exception {
         var client = new PortalSDK("http://localhost:3000/health", "ws://localhost:3000/ws");
 
-        client.connect();
+        client.connect("token");
 
         Thread.sleep(2000);
-
-        client.sendCommand(new AuthRequest("token"), (authResponse, err) -> {
-            if(err != null) {
-                logger.error("error auth: {}", err);
-                return;
-            }
-            logger.info("Auth response '{}'", authResponse.message());
-        });
 
         client.sendCommand(new KeyHandshakeUrlRequest(notification -> {
             client.sendCommand(new AuthenticateKeyRequest(notification.getMainKey(), Collections.emptyList()), (authenticateKeyResponse, err) -> {
@@ -86,7 +80,7 @@ public class Main {
                 Instant.now().plusSeconds(60 * 5).getEpochSecond() + "",
                 null,
                 "my first recurring payment",
-                "request-id-1"
+                "payment-" + new Random().nextInt(100_000)
         )), (requestRecurringPaymentResponse, err) -> {
             if(err != null) {
                 logger.error(err);
