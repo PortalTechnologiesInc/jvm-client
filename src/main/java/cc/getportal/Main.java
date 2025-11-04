@@ -1,8 +1,10 @@
 package cc.getportal;
 
-import cc.getportal.model.*;
-import cc.getportal.model.request.*;
-import cc.getportal.model.response.AuthenticateKeyResponse;
+import cc.getportal.command.request.*;
+import cc.getportal.command.response.AuthenticateKeyResponse;
+import cc.getportal.model.Currency;
+import cc.getportal.model.RecurrenceInfo;
+import cc.getportal.model.RecurringPaymentRequestContent;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;

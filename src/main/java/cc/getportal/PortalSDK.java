@@ -1,8 +1,8 @@
 package cc.getportal;
 
-import cc.getportal.model.PortalNotification;
-import cc.getportal.model.PortalRequest;
-import cc.getportal.model.PortalResponse;
+import cc.getportal.command.PortalNotification;
+import cc.getportal.command.PortalRequest;
+import cc.getportal.command.PortalResponse;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -10,10 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
