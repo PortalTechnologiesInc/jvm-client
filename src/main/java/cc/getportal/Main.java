@@ -87,6 +87,13 @@ public class Main {
                 return;
             }
             logger.info("RequestRecurringPayment response: {}", requestRecurringPaymentResponse);
+
+            try {
+                client.disconnect();
+                logger.info("Disconnected");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         });
 
     }

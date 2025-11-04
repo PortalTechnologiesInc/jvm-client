@@ -66,6 +66,16 @@ public class PortalSDK {
         wsClient.connect();
     }
 
+    public void disconnect() throws InterruptedException {
+        connected = false;
+
+        wsClient.close();
+
+        authToken = "";
+        commands.clear();
+        activeStreams.clear();
+    }
+
     public <T extends PortalRequest<E, N>, E extends PortalResponse, N extends PortalNotification> void sendCommand(@NotNull T req, @NotNull BiConsumer<E, String> fun) {
         if (!connected) {
             throw new PortalSDKException("not connected. Use PortalSDK#connect() before.");
