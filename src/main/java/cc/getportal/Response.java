@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedHashMap;
 
-public sealed class Response {
+sealed class Response {
     final String id;
     final ResponseType type;
 

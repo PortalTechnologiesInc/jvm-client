@@ -3,6 +3,7 @@ package cc.getportal;
 import cc.getportal.command.PortalNotification;
 import cc.getportal.command.PortalRequest;
 import cc.getportal.command.PortalResponse;
+import cc.getportal.model.Currency;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -37,6 +38,8 @@ public class PortalSDK {
     public PortalSDK(@NotNull String healthEndpoint, @NotNull String wsEndpoint) {
         this.gson = new GsonBuilder()
                 .registerTypeAdapter(Response.class, new ResponseDeserializer())
+                .registerTypeAdapter(Currency.class, new CurrencySerializer())
+                .registerTypeAdapter(Currency.class, new CurrencyDeserializer())
                 .create();
         this.healthEndpoint = healthEndpoint;
         this.wsEndpoint = wsEndpoint;
