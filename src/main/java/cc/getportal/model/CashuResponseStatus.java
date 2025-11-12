@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 public record CashuResponseStatus(
     Status status,
+    @Nullable String token,
     @Nullable String reason
 ) {
 
