@@ -101,6 +101,21 @@ public class Main {
 //            }
 //        });
 
+
+        client.sendCommand(new CalculateNextOccurrenceRequest("daily", System.currentTimeMillis() / 1000), (res, err) -> {
+            if(err != null) {
+                logger.error("Error calculating next occurrence: {}", err);
+                return;
+            }
+
+            if(res.next_occurrence() == null) {
+                logger.error("Next occurrence invalid");
+                return;
+            }
+
+            logger.info("Next occurrence: {}", Instant.ofEpochSecond(res.next_occurrence()).toString());
+
+        });
     }
 
     private static void createQrCode(String data) throws WriterException, IOException {
