@@ -61,61 +61,59 @@ public class Main {
     private static void connected(PortalSDK client, String mainKey, List<String> preferredRelays) {
         logger.info("KeyHandshake with {}", mainKey);
 
-        client.sendCommand(new RequestSinglePaymentRequest(mainKey, Collections.emptyList(), new SinglePaymentRequestContent(
-                "My first payment in java",
-                5,
-                Currency.FIAT("EUR"),
-                null,
-                null
-        ), notification -> {
-            logger.info("Single payment notification: {}", notification.status());
-        }), (requestSinglePaymentResponse, err) -> {
-            if(err != null) {
-                logger.info("error single payment: {}", err);
-                return;
-            }
-            logger.info("RequestSinglePayment response: {}", requestSinglePaymentResponse);
-        });
-
-//        client.sendCommand(new RequestRecurringPaymentRequest(mainKey, Collections.emptyList(), new RecurringPaymentRequestContent(
-//                10_000,
-//                Currency.MILLISATS,
-//                new RecurrenceInfo(null, "minutely", null, Instant.now().plusSeconds(60 * 1).getEpochSecond() + ""),
+//        client.sendCommand(new RequestSinglePaymentRequest(mainKey, Collections.emptyList(), new SinglePaymentRequestContent(
+//                "My first payment in java",
+//                5,
+//                Currency.FIAT("EUR"),
 //                null,
-//                Instant.now().plusSeconds(60 * 5).getEpochSecond() + "",
-//                null,
-//                "my first recurring payment",
-//                "payment-" + new Random().nextInt(100_000)
-//        )), (requestRecurringPaymentResponse, err) -> {
+//                null
+//        ), notification -> {
+//            logger.info("Single payment notification: {}", notification.status());
+//        }), (requestSinglePaymentResponse, err) -> {
 //            if(err != null) {
-//                logger.error(err);
+//                logger.info("error single payment: {}", err);
 //                return;
 //            }
-//            logger.info("RequestRecurringPayment response: {}", requestRecurringPaymentResponse);
-//
-//            try {
-//                client.disconnect();
-//                logger.info("Disconnected");
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
+//            logger.info("RequestSinglePayment response: {}", requestSinglePaymentResponse);
 //        });
 
-
-        client.sendCommand(new CalculateNextOccurrenceRequest("daily", System.currentTimeMillis() / 1000), (res, err) -> {
+        client.sendCommand(new RequestRecurringPaymentRequest(mainKey, Collections.emptyList(), new RecurringPaymentRequestContent(
+                "my first recurring payment",
+                1,
+                Currency.FIAT("EUR"),
+                null,
+                new RecurrenceInfo(null, "monthly", null, Instant.now().plusSeconds(60 * 1).getEpochSecond()),
+                Instant.now().plusSeconds(60 * 5).getEpochSecond()
+        )), (requestRecurringPaymentResponse, err) -> {
             if(err != null) {
-                logger.error("Error calculating next occurrence: {}", err);
+                logger.error(err);
                 return;
             }
+            logger.info("RequestRecurringPayment response: {}", requestRecurringPaymentResponse);
 
-            if(res.next_occurrence() == null) {
-                logger.error("Next occurrence invalid");
-                return;
+            try {
+                client.disconnect();
+                logger.info("Disconnected");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-
-            logger.info("Next occurrence: {}", Instant.ofEpochSecond(res.next_occurrence()).toString());
-
         });
+
+
+//        client.sendCommand(new CalculateNextOccurrenceRequest("daily", System.currentTimeMillis() / 1000), (res, err) -> {
+//            if(err != null) {
+//                logger.error("Error calculating next occurrence: {}", err);
+//                return;
+//            }
+//
+//            if(res.next_occurrence() == null) {
+//                logger.error("Next occurrence invalid");
+//                return;
+//            }
+//
+//            logger.info("Next occurrence: {}", Instant.ofEpochSecond(res.next_occurrence()).toString());
+//
+//        });
     }
 
     private static void createQrCode(String data) throws WriterException, IOException {
