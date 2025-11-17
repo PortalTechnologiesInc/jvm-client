@@ -30,6 +30,7 @@ public class PortalSDK {
     private final Gson gson;
     private final String healthEndpoint;
     private final String wsEndpoint;
+    Runnable onClose;
 
     String authToken = "";
     private boolean connected = false;
@@ -43,6 +44,11 @@ public class PortalSDK {
                 .create();
         this.healthEndpoint = healthEndpoint;
         this.wsEndpoint = wsEndpoint;
+    }
+
+    public PortalSDK onClose(@NotNull Runnable onClose) {
+        this.onClose = onClose;
+        return this;
     }
 
     public void connect(@NotNull String authToken) {

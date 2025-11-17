@@ -5,7 +5,6 @@ import cc.getportal.command.response.AuthenticateKeyResponse;
 import cc.getportal.model.Currency;
 import cc.getportal.model.RecurrenceInfo;
 import cc.getportal.model.RecurringPaymentRequestContent;
-import cc.getportal.model.SinglePaymentRequestContent;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -19,14 +18,13 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
-import java.util.UUID;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws Exception {
-        var client = new PortalSDK("http://localhost:3000/health", "ws://localhost:3000/ws");
+        var client = new PortalSDK("http://localhost:3000/health", "ws://localhost:3000/ws")
+                .onClose(() -> logger.error("Closed connection"));
 
         client.connect("token");
 
@@ -56,6 +54,8 @@ public class Main {
                 throw new RuntimeException(e);
             }
         });
+
+        Thread.sleep(1000 * 15);
     }
 
     private static void connected(PortalSDK client, String mainKey, List<String> preferredRelays) {

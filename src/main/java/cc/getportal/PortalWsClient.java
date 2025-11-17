@@ -38,7 +38,6 @@ class PortalWsClient extends WebSocketClient {
             client.setConnected(true);
             logger.info("Connected: {}", res.message());
         });
-
     }
 
     @Override
@@ -46,6 +45,11 @@ class PortalWsClient extends WebSocketClient {
         logger.warn("closed with exit code '{}' additional info: '{}'", code, reason);
 
         client.setConnected(false);
+
+        // Run function on close
+        if(client.onClose != null) {
+            client.onClose.run();
+        }
 
     }
 
