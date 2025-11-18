@@ -30,6 +30,15 @@ public class Main {
 
         Thread.sleep(2000);
 
+        client.sendCommand(new FetchNip05ProfileRequest("johng@getportal.cc"), (res, err) -> {
+            if(err != null) {
+                logger.error(err);
+                return;
+            }
+
+            logger.info("Profile: {}", res.profile());
+        });
+
         client.sendCommand(new KeyHandshakeUrlRequest(notification -> {
             client.sendCommand(new AuthenticateKeyRequest(notification.getMainKey(), Collections.emptyList()), (authenticateKeyResponse, err) -> {
                 if(err != null) {
