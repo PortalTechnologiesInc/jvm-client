@@ -1,7 +1,94 @@
-# Portal SDK - JVM Client
+# Portal JVM SDK - Documentation
+
+## Introduction
 
 A Java client for the Portal WebSocket Server, providing Nostr-based authentication and Lightning Network payment processing capabilities.
 
+---
+
+## Installation
+
+1. Add the Jitpack repository to your `build.gradle`:
+   ```groovy
+   repositories {
+       maven { url 'https://jitpack.io' }
+   }
+   ```
+
+   Or if you are using Maven, add the following to your `pom.xml`:
+    ```xml
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+    ```
+
+2. Add the dependency to your `build.gradle`:
+   ```groovy
+   dependencies {
+      implementation 'com.github.PortalTechnologiesInc:jvm-client:c23cd43aa2'
+   }
+   ```
+
+   Or if you are using Maven, add the following to your `pom.xml`:
+    ```xml
+    <dependency>
+        <groupId>com.github.PortalTechnologiesInc</groupId>
+        <artifactId>jvm-client</artifactId>
+        <version>c23cd43aa2</version>
+    </dependency>
+    ```
+
+4. Once you’re done, you may now proceed integrating the SDK into your project.
+
+
+---
+
+## Basic Usage
+
+### Initialization
+
+Create an instance of `PortalSDK` by passing the health and websocket endpoints of your portal server:
+
+```java
+var portalSDK = new PortalSDK(healthEndpoint, wsEndpoint);
+```
+
+### Connecting to the server
+
+The `connect` method will establish a connection to the server and authenticate the client.
+
+```java
+portalSDK.connect(authToken);
+```
+
+
+### Sending a command
+
+You can send a command to the server by calling the `sendCommand` method.
+
+```java
+portalSDK.sendCommand(request, (response, err) -> {
+    if(err != null) {
+        logger.error("error sending command: {}", err);
+        return;
+    }
+    logger.info("command sent successfully: {}", response);
+});
+```
+
+### Basic example
+
+```java
+portalSDK.sendCommand(new CalculateNextOccurrenceRequest("weekly", System.currentTimeMillis() / 1000), (res, err) -> {
+    if(err != null) {
+        logger.error("error calculating next occurrence: {}", err);
+        return;
+    }
+    logger.info("next occurrence: {}", res.next_occurrence());
+});
+```
+---
 
 ## Available Commands
 
@@ -17,3 +104,24 @@ Some key available commands include:
 > See [`src/main/java/cc/getportal/command/request/`](./src/main/java/cc/getportal/command/request/) for all available commands and additional details.
 
 To use a command, instantiate its request class and pass it to `PortalSDK.sendCommand(...)`. The full list of commands may evolve; check the request folder for the latest options.
+
+---
+
+## Example Integrations
+
+- See [portal-demo](https://github.com/PortalTechnologiesInc/portal-demo) for a Kotlin example.
+
+---
+
+## Main API
+
+- `PortalSDK` - Main client class
+- `PortalRequest` - Represents a request to the server
+- `PortalResponse` - Represents a response from the server
+- `PortalNotification` - Represents a notification from the server
+
+---
+
+## Support
+
+For questions or issues, see the official documentation or open an issue on the project's GitHub repository.

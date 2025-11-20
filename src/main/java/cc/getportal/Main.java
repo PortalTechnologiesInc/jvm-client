@@ -5,6 +5,7 @@ import cc.getportal.command.response.AuthenticateKeyResponse;
 import cc.getportal.model.Currency;
 import cc.getportal.model.RecurrenceInfo;
 import cc.getportal.model.RecurringPaymentRequestContent;
+import cc.getportal.model.SinglePaymentRequestContent;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -70,43 +71,43 @@ public class Main {
     private static void connected(PortalSDK client, String mainKey, List<String> preferredRelays) {
         logger.info("KeyHandshake with {}", mainKey);
 
-//        client.sendCommand(new RequestSinglePaymentRequest(mainKey, Collections.emptyList(), new SinglePaymentRequestContent(
-//                "My first payment in java",
-//                5,
-//                Currency.FIAT("EUR"),
-//                null,
-//                null
-//        ), notification -> {
-//            logger.info("Single payment notification: {}", notification.status());
-//        }), (requestSinglePaymentResponse, err) -> {
-//            if(err != null) {
-//                logger.info("error single payment: {}", err);
-//                return;
-//            }
-//            logger.info("RequestSinglePayment response: {}", requestSinglePaymentResponse);
-//        });
-
-        client.sendCommand(new RequestRecurringPaymentRequest(mainKey, Collections.emptyList(), new RecurringPaymentRequestContent(
-                "my first recurring payment",
-                1,
-                Currency.FIAT("EUR"),
+        client.sendCommand(new RequestSinglePaymentRequest(mainKey, Collections.emptyList(), new SinglePaymentRequestContent(
+                "My first payment in java",
+                5,
+                Currency.FIAT("eur"),
                 null,
-                new RecurrenceInfo(null, "monthly", null, Instant.now().plusSeconds(60 * 1).getEpochSecond()),
-                Instant.now().plusSeconds(60 * 5).getEpochSecond()
-        )), (requestRecurringPaymentResponse, err) -> {
+                null
+        ), notification -> {
+            logger.info("Single payment notification: {}", notification.status());
+        }), (requestSinglePaymentResponse, err) -> {
             if(err != null) {
-                logger.error(err);
+                logger.info("error single payment: {}", err);
                 return;
             }
-            logger.info("RequestRecurringPayment response: {}", requestRecurringPaymentResponse);
-
-            try {
-                client.disconnect();
-                logger.info("Disconnected");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            logger.info("RequestSinglePayment response: {}", requestSinglePaymentResponse);
         });
+
+//        client.sendCommand(new RequestRecurringPaymentRequest(mainKey, Collections.emptyList(), new RecurringPaymentRequestContent(
+//                "my first recurring payment",
+//                1,
+//                Currency.FIAT("eur"),
+//                null,
+//                new RecurrenceInfo(null, "monthly", null, Instant.now().plusSeconds(60 * 1).getEpochSecond()),
+//                Instant.now().plusSeconds(60 * 5).getEpochSecond()
+//        )), (requestRecurringPaymentResponse, err) -> {
+//            if(err != null) {
+//                logger.error(err);
+//                return;
+//            }
+//            logger.info("RequestRecurringPayment response: {}", requestRecurringPaymentResponse);
+//
+//            try {
+//                client.disconnect();
+//                logger.info("Disconnected");
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        });
 
 
 //        client.sendCommand(new CalculateNextOccurrenceRequest("daily", System.currentTimeMillis() / 1000), (res, err) -> {

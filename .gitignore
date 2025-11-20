@@ -1,3 +1,5 @@
+src/main/java/cc/getportal/Main.java
+
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
