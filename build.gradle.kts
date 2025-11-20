@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "cc.getportal"
-version = "1.0-SNAPSHOT"
+version = "0.1.0"
 
 repositories {
     mavenCentral()
@@ -17,7 +17,7 @@ publishing {
 
             groupId = "cc.getportal"
             artifactId = "portal-jvm-client"
-            version = "1.0-SNAPSHOT"
+            version = "0.1.0"
         }
     }
 }
@@ -40,8 +40,8 @@ dependencies {
     // Json serialization
     implementation("com.google.code.gson:gson:2.13.2")
 
-    implementation("com.google.zxing:core:3.3.0")
-    implementation("com.google.zxing:javase:3.3.0")
+//    implementation("com.google.zxing:core:3.3.0")
+//    implementation("com.google.zxing:javase:3.3.0")
 
 }
 

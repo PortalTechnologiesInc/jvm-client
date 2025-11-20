@@ -26,7 +26,7 @@ A Java client for the Portal WebSocket Server, providing Nostr-based authenticat
 2. Add the dependency to your `build.gradle`:
    ```groovy
    dependencies {
-      implementation 'com.github.PortalTechnologiesInc:jvm-client:c23cd43aa2'
+      implementation 'com.github.PortalTechnologiesInc:jvm-client:0.1.0'
    }
    ```
 
@@ -35,11 +35,11 @@ A Java client for the Portal WebSocket Server, providing Nostr-based authenticat
     <dependency>
         <groupId>com.github.PortalTechnologiesInc</groupId>
         <artifactId>jvm-client</artifactId>
-        <version>c23cd43aa2</version>
+        <version>0.1.0</version>
     </dependency>
     ```
 
-4. Once you’re done, you may now proceed integrating the SDK into your project.
+3. Once you’re done, you may now proceed integrating the SDK into your project.
 
 
 ---
